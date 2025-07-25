@@ -10,7 +10,32 @@ export class MerkleTree {
   }
 
   private computeMerkleRoot(elements: string[]): string {
-    throw new Error("implement me!");
+    if (elements.length === 0) return "";
+
+    let layer = [...elements];
+
+    while (layer.length > 1) {
+      const newLayer: string[] = [];
+
+      if (layer.length % 2 !== 0) {
+        layer.push(layer[layer.length - 1]); // duplicate last if odd
+      }
+
+      for (let i = 0; i < layer.length; i += 2) {
+        const left = layer[i];
+        const right = layer[i + 1];
+
+        const [low, high] =
+          BigInt("0x" + left) <= BigInt("0x" + right) ? [left, right] : [right, left];
+
+        const combined = MerkleTree.hash(low + high);
+        newLayer.push(combined);
+      }
+
+      layer = newLayer;
+    }
+
+    return layer[0];
   }
 
   verifyProof(leaf: string, proof: string[]): boolean {
